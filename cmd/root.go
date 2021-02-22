@@ -7,12 +7,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/hlts2/errgroup"
+	"github.com/briandowns/spinner"
 	"github.com/hlts2/gobf"
 	"github.com/hlts2/godict"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -85,10 +87,14 @@ var rootCmd = &cobra.Command{
 			// },
 		}
 
+		s := spinner.New(spinner.CharSets[4], 100*time.Millisecond)
+		s.Start()
+		defer s.Stop()
+
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 
-		limit := make(chan struct{}, 100)
+		limit := make(chan struct{}, 8)
 
 		eg, egctx := errgroup.WithContext(ctx)
 
@@ -106,6 +112,7 @@ var rootCmd = &cobra.Command{
 						Auth: []ssh.AuthMethod{
 							ssh.Password(pass),
 						},
+						Timeout: 5 * time.Second,
 					}
 
 					select {
@@ -130,7 +137,7 @@ var rootCmd = &cobra.Command{
 						defer conn.Close()
 						cancel()
 
-						fmt.Printf("Successful connection to ssh server.  password: %s\n", pass)
+						fmt.Printf(" Successful connection to ssh server.  password: %s\n", pass)
 						return nil
 					})
 				})
@@ -138,8 +145,10 @@ var rootCmd = &cobra.Command{
 		}
 
 		err := eg.Wait()
-		if errors.Is(err, context.Canceled) {
-			return nil
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil
+			}
 		}
 
 		return err

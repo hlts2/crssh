@@ -120,7 +120,8 @@ var rootCmd = &cobra.Command{
 					eg.Go(func() (err error) {
 						defer func() {
 							select {
-							case <-egctx.Done():
+							case _ = <-egctx.Done():
+								err = egctx.Err()
 								return
 							case <-limit:
 							}

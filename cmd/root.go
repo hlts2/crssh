@@ -66,7 +66,7 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		gens := []func() (passCracker, error){
+		crackerGens := []func() (passCracker, error){
 
 			// generator for dictionary attack.
 			func() (passCracker, error) {
@@ -90,14 +90,14 @@ var rootCmd = &cobra.Command{
 
 		eg, egctx := errgroup.WithContext(ctx)
 
-		for _, gen := range gens {
-			gen := gen
+		for _, crackerGen := range crackerGens {
+			crackerGen := crackerGen
 			eg.Go(func() error {
-				crack, err := gen()
+				cracker, err := crackerGen()
 				if err != nil {
 					return err
 				}
-				return crack.Do(egctx, func(pass string) {
+				return cracker.Do(egctx, func(pass string) {
 					config := &ssh.ClientConfig{
 						User:            user,
 						HostKeyCallback: ssh.InsecureIgnoreHostKey(), // https://github.com/golang/go/issues/19767

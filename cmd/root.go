@@ -19,7 +19,7 @@ const (
 	version = "v0.0.1"
 )
 
-type passGenerator = gobf.BruteForce
+type passCracker = gobf.BruteForce
 
 var (
 	host string
@@ -66,15 +66,15 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		gens := []func() (passGenerator, error){
+		gens := []func() (passCracker, error){
 
 			// generator for dictionary attack.
-			func() (passGenerator, error) {
+			func() (passCracker, error) {
 				return godict.New()
 			},
 
 			// generator for brute force attack.
-			func() (passGenerator, error) {
+			func() (passCracker, error) {
 				return gobf.New(
 					gobf.WithUpper(true),
 					gobf.WithLower(true),

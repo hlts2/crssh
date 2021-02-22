@@ -73,22 +73,22 @@ var rootCmd = &cobra.Command{
 				return godict.New()
 			},
 
-			// generator for brute force attack.
-			func() (passCracker, error) {
-				return gobf.New(
-					gobf.WithUpper(true),
-					gobf.WithLower(true),
-					gobf.WithNumber(true),
-					gobf.WithSize(int(size)),
-					gobf.WithConcrencyLimit(100000),
-				)
-			},
+			// // generator for brute force attack.
+			// func() (passCracker, error) {
+			// 	return gobf.New(
+			// 		gobf.WithUpper(true),
+			// 		gobf.WithLower(true),
+			// 		gobf.WithNumber(true),
+			// 		gobf.WithSize(int(size)),
+			// 		gobf.WithConcrencyLimit(100000),
+			// 	)
+			// },
 		}
 
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 
-		limit := make(chan struct{}, 3000)
+		limit := make(chan struct{}, 100)
 
 		eg, egctx := errgroup.WithContext(ctx)
 
@@ -122,6 +122,7 @@ var rootCmd = &cobra.Command{
 							case <-limit:
 							}
 						}()
+
 						conn, err := ssh.Dial("tcp", host+":"+strPort, config)
 						if err != nil {
 							return nil

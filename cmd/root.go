@@ -35,12 +35,12 @@ var (
 func init() {
 	rootCmd.Flags().StringVarP(&user, "user", "u", "root", "set user name")
 	rootCmd.Flags().UintVarP(&port, "port", "p", 22, "set port number")
-	rootCmd.Flags().UintVarP(&size, "size", "s", 4, "set password size")
+	rootCmd.Flags().UintVarP(&size, "size", "s", 4, "set password size for brute force attack")
 }
 
 var rootCmd = &cobra.Command{
 	Use:     "crssh",
-	Short:   "penetration testing tool for ssh",
+	Short:   "penetration testing tool for ssh server",
 	Version: version,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -66,15 +66,14 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		ctx, cancel := context.WithCancel(cmd.Context())
-		defer cancel()
-
-		eg, egctx := errgroup.WithContext(ctx)
-
 		gens := []func() (passGenerator, error){
+
+			// generator for dictionary attack.
 			func() (passGenerator, error) {
 				return godict.New()
 			},
+
+			// generator for brute force attack.
 			func() (passGenerator, error) {
 				return gobf.New(
 					gobf.WithUpper(true),
@@ -85,6 +84,12 @@ var rootCmd = &cobra.Command{
 				)
 			},
 		}
+
+		ctx, cancel := context.WithCancel(cmd.Context())
+		defer cancel()
+
+		eg, egctx := errgroup.WithContext(ctx)
+
 		for _, gen := range gens {
 			gen := gen
 			eg.Go(func() error {

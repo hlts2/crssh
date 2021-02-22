@@ -10,7 +10,7 @@ const (
 	user = "linuxserver.io"
 	host = "127.0.0.1"
 	port = "2222"
-	pass = "password"
+	pass = "root"
 )
 
 func TestConnection(t *testing.T) {

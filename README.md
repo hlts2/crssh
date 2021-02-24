@@ -10,7 +10,7 @@ go get github.com/hlts2/crssh
 
 ## Usage
 
-```
+```bash
 $ crssh --help
 penetration testing tool for ssh server
 
@@ -33,7 +33,7 @@ Flags:
 
 Execute a dictionary attack with the `d` option.
 
-```sh
+```bash
 $ crssh root@127.0.0.1 -p 2222 -d
 ```
 
@@ -41,7 +41,7 @@ $ crssh root@127.0.0.1 -p 2222 -d
 
 Execute a brute force attack with the `b` option.
 
-```sh
+```bash
 $ crssh root@127.0.0.1 -p 2222 -b
 ```
 
@@ -49,6 +49,6 @@ $ crssh root@127.0.0.1 -p 2222 -b
 
 Execute dictionary and brute force attacks with the `d` and `b` options.
 
-```sh
+```bash
 $ crssh root@127.0.0.1 -p 2222 -db
 ```

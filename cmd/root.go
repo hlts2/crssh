@@ -72,7 +72,7 @@ var rootCmd = &cobra.Command{
 		strPort = strconv.Itoa(int(port))
 
 		if !bfAttackEnabled && !dictAttackEnabled {
-			return errors.New("attack option not set")
+			return errors.New("attack method not set")
 		}
 
 		return nil

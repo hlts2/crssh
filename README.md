@@ -1,6 +1,10 @@
 # crssh
 
-SSH password cracker for penetration tests using brute force and dictionary attacks.
+SSH password cracker for penetration tests using [brute force](https://github.com/hlts2/gobf) and [dictionary attacks](https://github.com/hlts2/godict).
+
+## Requirement
+
+Go 1.15+
 
 ## Install
 

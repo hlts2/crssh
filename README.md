@@ -47,7 +47,7 @@ $ crssh root@127.0.0.1 -p 2222 -b
 
 #### Dictionary Attack & Brute Force Attack
 
-Execute　dictionary and brute force attacks with the `d` and `b` options.
+Execute dictionary and brute force attacks with the `d` and `b` options.
 
 ```sh
 $ crssh root@127.0.0.1 -p 2222 -db

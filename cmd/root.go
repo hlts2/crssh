@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/hlts2/gobf"
@@ -132,14 +134,31 @@ var rootCmd = &cobra.Command{
 			})
 		}
 
-		err = eg.Wait()
-		if err != nil {
-			if errors.Is(err, context.Canceled) {
-				return nil
+		errCh := make(chan error)
+		defer close(errCh)
+
+		go func() {
+			errCh <- eg.Wait()
+		}()
+
+		sigCh := make(chan os.Signal, 1)
+		defer func() {
+			signal.Stop(sigCh)
+			close(sigCh)
+		}()
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+		for {
+			select {
+			case <-sigCh:
+				cancel()
+			case err := <-errCh:
+				if errors.Is(err, context.Canceled) {
+					return nil
+				}
+				return err
 			}
 		}
-
-		return err
 	},
 }
 

@@ -7,11 +7,11 @@ This directory provides example of SSH password cracker for penetration tests on
 ### Run test ssh server
 
 ```
-$ make run
+$ make ssh/server/start
 ```
 
 ### Attack
 
 ```
-$ crssh linuxserver.io@127.0.0.1 -p 2222 -d
+$ crssh user_1@127.0.0.1 -p 2222 -d
 ```

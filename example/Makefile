@@ -9,6 +9,6 @@ ssh/server/start:
     -e SUDO_ACCESS=true \
     -e PASSWORD_ACCESS=true \
     -e USER_PASSWORD=password \
-    -e USER_NAME=linuxserver.io \
+    -e USER_NAME=user_1 \
     -p 2222:2222 \
     ${NAME}

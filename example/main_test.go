@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	user = "linuxserver.io"
+	user = "user_1"
 	host = "127.0.0.1"
 	port = "2222"
 	pass = "password"

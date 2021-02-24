@@ -1,6 +1,6 @@
 # crssh
 
-SSH password cracker for penetration tests using brute force and dictionary attacks.
+SSH password crack for penetration tests using brute force and dictionary attacks.
 
 ## Requirement
 

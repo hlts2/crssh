@@ -1,6 +1,6 @@
 # example
 
-This directory provides example of SSH password cracker for penetration tests on using brute force or dictionary attacks.
+This directory provides example of SSH password cracker for penetration tests using brute force or dictionary attacks.
 
 ## Example
 
@@ -10,7 +10,7 @@ This directory provides example of SSH password cracker for penetration tests on
 $ make ssh/server/start
 ```
 
-### Attack
+### Attack using dictionary
 
 ```zsh
 $ crssh user_1@127.0.0.1 -p 2222 -d

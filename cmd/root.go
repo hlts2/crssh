@@ -40,10 +40,10 @@ var (
 
 func init() {
 	rootCmd.Flags().StringVarP(&user, "user", "u", "root", "set user name")
-	rootCmd.Flags().BoolVarP(&bfAttackEnabled, "bruteforce", "b", false, "set brute force attack")
-	rootCmd.Flags().BoolVarP(&dictAttackEnabled, "dictionary", "d", false, "set dictionary attack")
 	rootCmd.Flags().UintVarP(&port, "port", "p", 22, "set port number")
+	rootCmd.Flags().BoolVarP(&bfAttackEnabled, "bruteforce", "b", false, "set brute force attack")
 	rootCmd.Flags().UintVarP(&size, "size", "s", 4, "set password size for brute force attack")
+	rootCmd.Flags().BoolVarP(&dictAttackEnabled, "dictionary", "d", false, "set dictionary attack")
 }
 
 var rootCmd = &cobra.Command{

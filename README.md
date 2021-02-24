@@ -12,6 +12,13 @@ Go 1.15+
 go get github.com/hlts2/crssh
 ```
 
+## Attack Method
+
+- Brute Force Attack
+  - [gobf](https://github.com/hlts2/gobf)
+- Dictionary Attack
+  - [godict](https://github.com/hlts2/godict)
+
 ## Usage
 
 ```bash
